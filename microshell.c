@@ -2,12 +2,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
-#define TRUE 1
-#define FALSE 0
 #define STDIN__ 0
 #define STDOUT__ 1
 #define STDERR__ 2
-#define output(S) write(STDOUT__, (S), strlen__(S))
 #define errput(S) write(STDERR__, (S), strlen__(S))
 #define ERR_CD_ARG "error: cd: bad arguments"
 #define ERR_CD_FAIL "error: cd: cannot change directory to "
