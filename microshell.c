@@ -22,16 +22,16 @@ int parent(pid_t pid, int flag, int *fd);
 void child(int ac, char **av, char **env, int flag, int *fd);
 
 int main(int ac, char **av, char **env) {
-	int l = 0, r = -1, flag = 0, rtn = 0;
+	int l=0, r=-1, flag=0, rtn=0;
 	--ac, ++av;
-	if (ac) {
+	if (ac != 0) {
 		while (++r <= ac) {
-			if ((flag = (r == ac) * 1)
-			|| (flag = !strcmp(av[r], "|") * 2)
-			|| (flag = !strcmp(av[r], ";") * 3)) {
+			if ((flag = 1*(r == ac))
+			|| (flag = 2*!strcmp(av[r], "|"))
+			|| (flag = 3*!strcmp(av[r], ";"))) {
 				if (l < r)
-					rtn = exec(r - l, av + l, env, flag);
-				l = r + 1;
+					rtn = exec(r-l, av+l, env, flag);
+				l = r+1;
 			}
 		}
 	}
@@ -44,14 +44,12 @@ int strlen__(const char *s) {
 	return i;
 }
 void error__(const char *msg, const char *targ) {
-	unsigned long p1 = (unsigned long)msg;
-	unsigned long p2 = (unsigned long)ERR_FATAL;
+	unsigned long p1=(unsigned long)msg;
+	unsigned long p2=(unsigned long)ERR_FATAL;
 	errput(msg);
-	if (targ)
-		errput(targ);
+	if (targ) errput(targ);
 	errput(ENDL);
-	if (p1 == p2)
-		exit(-1);
+	if (p1 == p2) exit(-1);
 }
 
 int exec(int ac, char **av, char **env, int flag) {
@@ -71,20 +69,19 @@ int run(int ac, char **av, char **env, int flag) {
 	if (flag == 2 && pipe(fd))
 		error__(ERR_FATAL, NULL);
 	pid_t pid = fork();
-	if (!pid)
-		child(ac, av, env, flag, fd);
+	if (!pid) child(ac, av, env, flag, fd);
 	return parent(pid, flag, fd);
 }
 int parent(pid_t pid, int flag, int *fd) {
 	int rtn;
 	waitpid(pid, &rtn, 0);
-	if (flag == 2 && (dup2(fd[0], STDIN__) || close(fd[0]) || close(fd[1])))
+	if (flag == 2 && (dup2(fd[0], STDIN__) == -1 || close(fd[0]) || close(fd[1])))
 		error__(ERR_FATAL, NULL);
 	return WIFEXITED(rtn) && WEXITSTATUS(rtn);
 }
 void child(int ac, char **av, char **env, int flag, int *fd) {
 	av[ac] = NULL;
-	if (flag == 2 && (dup2(fd[1], STDOUT__) || close(fd[0]) || close(fd[1])))
+	if (flag == 2 && (dup2(fd[1], STDOUT__) == -1 || close(fd[0]) || close(fd[1])))
 		error__(ERR_FATAL, NULL);
 	execve(*av, av, env);
 	error__(ERR_EXE_FAIL, *av), exit(-1);
